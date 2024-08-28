@@ -17,6 +17,9 @@ from orders.models import Order
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 import logging
+from django.shortcuts import render
+from django.contrib.auth.views import PasswordResetView
+from django.urls import reverse_lazy
 
 def signup_Bus(request):
     if request.method == 'POST':
@@ -92,17 +95,19 @@ def login_view(request: HttpRequest):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            
             user = authenticate(request, username=username, password=password)
             if user:
                 login(request, user)
-                # Get user profile
-                profile = Profile.objects.get(user=user)
-                return redirect('home') 
+                return redirect('home')
+                
             else:
-                messages.error(request, "Invalid credentials. Please try again.", extra_tags="alert-danger")
+                messages.error(request, "Invalid username or password. Please try again.", extra_tags="alert-danger")
     else:
         form = LoginForm()
     return render(request, 'accounts/login.html', {'form': form})
+
+
 
 
 
@@ -276,3 +281,37 @@ def order_list_for_pdf(request: HttpRequest):
         'selected_status': selected_status,
     }
     return render(request, 'accounts/pdf_contract.html', context)
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
+from .forms import PasswordResetRequestForm
+import random
+import string
+
+def password_reset_request(request):
+    if request.method == 'POST':
+        form = PasswordResetRequestForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            try:
+                user = User.objects.get(email=email)
+                
+                # Generate a temporary password
+                temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+                
+                # Update user's password in the database
+                user.set_password(temp_password)
+                user.save()
+                
+                # Optionally, you can store the temporary password in a session or other method to provide it to the user
+                request.session['temp_password'] = temp_password
+                
+                return redirect('password_reset_done')  # Redirect to a confirmation page or login page
+            except User.DoesNotExist:
+                form.add_error('email', 'No user with this email address.')
+    else:
+        form = PasswordResetRequestForm()
+    
+    return render(request, 'accounts/password_reset_request.html', {'form': form})
