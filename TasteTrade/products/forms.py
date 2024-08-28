@@ -8,13 +8,12 @@ from .models import Product
 from orders.models import Order
 
 class ProductForm(forms.ModelForm):
-    CATEGORY_CHOICES = [
-        ('Desserts', 'Desserts'),
-        ('Coffee', 'Coffee'),
-        ('Baked Goods', 'Baked Goods'),
-    ]
-
-    category = forms.ChoiceField(choices=CATEGORY_CHOICES, widget=forms.Select(), required=True)
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.Select(),
+        required=True,
+        label="Select Category"
+    )
 
     class Meta:
         model = Product

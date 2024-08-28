@@ -56,13 +56,30 @@ def add_category(request):
     if request.method == "POST":
         form = CategoryForm(request.POST)
         if form.is_valid():
-            form.save()
+            category = form.save(commit=False)
+            category.user = request.user
+            category.save()
             return redirect('add_category') 
     else:
         form = CategoryForm()
     
-    categories = Category.objects.all()
-    return render(request, 'add_category.html', {'form': form})
+    categories = Category.objects.filter(user=request.user)
+    context = {
+        'form': form,
+        'categories': categories,
+    }
+    return render(request, 'add_category.html', {
+        'form': form, 
+        'categories': categories,
+        })
+@login_required
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id, user=request.user)
+    if request.method == 'POST':
+        category.delete()
+        return redirect('add_category')
+
+    return render(request, 'confirm_delete.html', {'category': category})
 
 @login_required
 #@user_passes_test(is_supplier)

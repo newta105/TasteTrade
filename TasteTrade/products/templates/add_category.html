@@ -1,160 +1,124 @@
-{% extends "main/base.html" %}
-{% load static %}
-
-{% block title %}Product List{% endblock %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
-            margin: 0;
-            padding: 0;
+            background-color: #FFFFFF;
         }
 
-        .header {
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .header img {
-            height: 150px;
-            width: 150px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-        }
-
-        .header-right a {
-            margin-left: 20px;
-            color: #6d4c41;
-            text-decoration: none;
-        }
-
-        .header-right a:hover {
-            text-decoration: underline;
-        }
-
-        .sidebar {
-            background-color: #ffffff;
+        .form-container {
+            max-width: 800px;
+            margin: 50px auto;
             padding: 20px;
-            border-right: 1px solid #e0e0e0;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .container-fluid {
-            display: flex;
-            padding-top: 20px;
+        .form-field {
+            margin-bottom: 15px;
+            width: 100%;
+            color: #67594B;
         }
 
-        .search-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            color: #67594B;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .form-container input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #67594B;
+            border-radius: 5px;
+            background-color: #FAFAF5;
+            box-sizing: border-box;
+            color: #67594B;
+        }
+
+        .form-container button {
+            background-color: #67594B;
+            color: #fff;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .form-container button:hover {
+            background-color: #3e2d28;
+        }
+
+        h2 {
+            color: #67594B;
+            text-align: center;
+            font-family: "Arial", sans-serif;
+            font-size: 24px;
             margin-bottom: 20px;
         }
 
-        .search-container input {
-            width: 100%;
-            max-width: 300px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .category-list {
+            margin-top: 30px;
         }
 
-        .product-container {
+        .list-group-item {
             border: 1px solid #ddd;
-            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #FAFAF5;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
             text-align: center;
-            background-color: #fff;
-            border-radius: 5px;
+            color: #67594B;
+            text-decoration: none;
+            font-size: 14px;
         }
 
-        .product-image {
-            height: 150px;
-            width: 100%;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 5px;
+        .back-link:hover {
+            text-decoration: underline;
         }
-
-        .product-image img {
-            max-height: 100%;
-            max-width: 100%;
-            object-fit: contain;
-        }
-
-        .product-info {
-            padding: 10px 0;
-        }
-
     </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Add a Category</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Add Category</button>
+        </form>
 
-    <!-- Main content -->
-    <div class="container-fluid">
-        <!-- Sidebar -->
-        <div class="col-md-3 sidebar">
-            <h4>Keywords</h4>
-            <input type="text" class="form-control mb-3" placeholder="Search">
-
-            <h5>Categories</h5>
-            <ul>
-                <li><input type="checkbox"> Coffee</li>
-                <li><input type="checkbox"> Baked Goods</li>
-                <li><input type="checkbox"> Desserts</li>
-            </ul>
-
-            <h5>Price</h5>
-            <label for="priceRange">Price: <span id="priceValue">50</span> SR</label>
-            <input type="range" class="form-range" id="priceRange" min="0" max="100" value="50">        
-        </div>
-
-        <!-- Products -->
-        <div class="col-md-9">
-            <div class="search-container">
-                <input type="text" placeholder="Search...">
-                <a href="{% url 'add_product' %}">
-                    <button class="btn btn-light">New</button>
-                </a>
-            </div>
-            <div class="row">
-                {% for product in products %}
-                <div class="col-md-4 mb-4">
-                    <a href="{% url 'order_product' product.id %}">
-                        <div class="product-container">
-                            <div class="product-image">
-                                {% if product.image %}
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                                {% else %}
-                                <img src="{% static 'images/default-product.png' %}" alt="Default">
-                                {% endif %}
-                            </div>
-                            <div class="product-info">
-                                <h5>{{ product.name }}</h5>
-                                <p>{{ product.price }} SR</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+        <div class="category-list">
+            <h3>Category List</h3>
+            <ul class="list-group">
+                {% for category in categories %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ category.name }}
+                        <form method="post" action="{% url 'delete_category' category.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </li>
                 {% empty %}
-                <p>No products found.</p>
+                    <li class="list-group-item">No categories available.</li>
                 {% endfor %}
-            </div>
+            </ul>
         </div>
+
+        <a href="{% url 'supplier_dashboard' %}" class="back-link">Back to Dashboard</a>
     </div>
-
-<script>
-    const rangeInput = document.getElementById('priceRange');
-    const priceValue = document.getElementById('priceValue');
-
-    rangeInput.addEventListener('input', function() {
-        priceValue.textContent = rangeInput.value;
-    });
-</script>
-{% endblock %}
+</body>
+</html>
